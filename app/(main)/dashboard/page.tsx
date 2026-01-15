@@ -172,7 +172,15 @@ export default function DashboardPage() {
 
         {/* Recent Articles */}
         <div className="border border-border rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Articles</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Recent Articles</h2>
+            <Link
+              href="/browse"
+              className="text-sm text-primary hover:underline"
+            >
+              Browse All &rarr;
+            </Link>
+          </div>
           {isLoadingArticles ? (
             <p className="text-muted-foreground">Loading articles...</p>
           ) : recentArticles?.length === 0 ? (

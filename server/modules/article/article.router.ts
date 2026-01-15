@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter } from "@/server/trpc";
 import { publicProcedure } from "@/server/procedures";
 import { articles } from "@/db/schema";
-import { eq, desc, and, gte } from "drizzle-orm";
+import { eq, desc, and, gte, lt, count } from "drizzle-orm";
 
 export const articleRouter = createTRPCRouter({
   /**
@@ -82,5 +82,60 @@ export const articleRouter = createTRPCRouter({
       });
 
       return items;
+    }),
+
+  /**
+   * Paginated articles with cursor-based pagination
+   * Returns articles grouped by date
+   */
+  browse: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(20),
+        cursor: z.string().datetime().optional(), // ISO date string cursor
+        topicId: z.string().uuid().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor, topicId } = input;
+
+      // Build conditions
+      const conditions = [];
+      if (cursor) {
+        conditions.push(lt(articles.publishedAt, new Date(cursor)));
+      }
+      if (topicId) {
+        conditions.push(eq(articles.topicId, topicId));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      // Fetch articles
+      const items = await ctx.db.query.articles.findMany({
+        where: whereClause,
+        orderBy: [desc(articles.publishedAt)],
+        limit: limit + 1, // Fetch one extra to check if there's more
+        with: {
+          topic: true,
+        },
+      });
+
+      // Check if there's a next page
+      let nextCursor: string | undefined;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = nextItem?.publishedAt.toISOString();
+      }
+
+      // Get total count
+      const [totalResult] = await ctx.db
+        .select({ count: count() })
+        .from(articles);
+
+      return {
+        items,
+        nextCursor,
+        totalCount: totalResult?.count ?? 0,
+      };
     }),
 });
