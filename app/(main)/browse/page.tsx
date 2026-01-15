@@ -11,6 +11,7 @@ function groupArticlesByDate(
     title: string;
     description: string | null;
     url: string;
+    imageUrl: string | null;
     publisherName: string | null;
     publishedAt: Date;
     topic: { name: string; slug: string } | null;
@@ -77,7 +78,7 @@ export default function BrowsePage() {
 
   const { data, isLoading, isFetching } = api.article.browse.useQuery(
     { limit: 20, cursor },
-    { keepPreviousData: true }
+    { placeholderData: (prev) => prev }
   );
 
   // Update articles when data changes
@@ -160,45 +161,60 @@ export default function BrowsePage() {
               {groupedArticles[dateKey].map((article) => (
                 <article
                   key={article.id}
-                  className="border border-border rounded-lg p-4 hover:bg-secondary/30 transition-colors"
+                  className="border border-border rounded-lg overflow-hidden hover:bg-secondary/30 transition-colors"
                 >
                   <a
                     href={article.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:underline font-medium text-base block"
+                    className="flex gap-4"
                   >
-                    {article.title}
-                  </a>
-                  {article.description && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      {article.description}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2 mt-3 text-xs text-muted-foreground">
-                    {article.publisherName && (
-                      <span className="bg-secondary px-2 py-0.5 rounded">
-                        {article.publisherName}
-                      </span>
+                    {/* Article Image */}
+                    {article.imageUrl && (
+                      <div className="w-32 h-24 flex-shrink-0 bg-secondary">
+                        <img
+                          src={article.imageUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      </div>
                     )}
-                    {article.topic && (
-                      <Link
-                        href={`/topic/${article.topic.slug}`}
-                        className="bg-primary/10 text-primary px-2 py-0.5 rounded hover:bg-primary/20"
-                      >
-                        {article.topic.name}
-                      </Link>
-                    )}
-                    <span>
-                      {new Date(article.publishedAt).toLocaleTimeString(
-                        "en-US",
-                        {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        }
+                    {/* Article Content */}
+                    <div className="flex-1 py-3 pr-4">
+                      <h3 className="font-medium text-base hover:underline line-clamp-2">
+                        {article.title}
+                      </h3>
+                      {article.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {article.description}
+                        </p>
                       )}
-                    </span>
-                  </div>
+                      <div className="flex flex-wrap gap-2 mt-2 text-xs text-muted-foreground">
+                        {article.publisherName && (
+                          <span className="bg-secondary px-2 py-0.5 rounded">
+                            {article.publisherName}
+                          </span>
+                        )}
+                        {article.topic && (
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                            {article.topic.name}
+                          </span>
+                        )}
+                        <span>
+                          {new Date(article.publishedAt).toLocaleTimeString(
+                            "en-US",
+                            {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
                 </article>
               ))}
             </div>

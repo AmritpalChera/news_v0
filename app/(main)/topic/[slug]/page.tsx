@@ -128,45 +128,58 @@ export default function TopicPage({
         <div className="border border-border rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-4">Recent Articles</h2>
           {topic.articles && topic.articles.length > 0 ? (
-            <ul className="space-y-4">
+            <div className="space-y-4">
               {topic.articles.map((article) => (
-                <li
+                <a
                   key={article.id}
-                  className="border-b border-border pb-4 last:border-0 last:pb-0"
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex gap-4 border-b border-border pb-4 last:border-0 last:pb-0 hover:bg-secondary/30 -mx-2 px-2 py-2 rounded transition-colors"
                 >
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline font-medium text-base"
-                  >
-                    {article.title}
-                  </a>
-                  {article.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      {article.description}
-                    </p>
+                  {article.imageUrl && (
+                    <div className="w-28 h-20 flex-shrink-0 rounded overflow-hidden bg-secondary">
+                      <img
+                        src={article.imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.parentElement!.style.display = "none";
+                        }}
+                      />
+                    </div>
                   )}
-                  <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
-                    {article.publisherName && (
-                      <span>{article.publisherName}</span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-base hover:underline line-clamp-2">
+                      {article.title}
+                    </h3>
+                    {article.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        {article.description}
+                      </p>
                     )}
-                    <span>•</span>
-                    <span>
-                      {new Date(article.publishedAt).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        }
+                    <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
+                      {article.publisherName && (
+                        <span className="bg-secondary px-2 py-0.5 rounded">
+                          {article.publisherName}
+                        </span>
                       )}
-                    </span>
+                      <span>
+                        {new Date(article.publishedAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          }
+                        )}
+                      </span>
+                    </div>
                   </div>
-                </li>
+                </a>
               ))}
-            </ul>
+            </div>
           ) : (
             <p className="text-muted-foreground">
               No articles yet for this topic.

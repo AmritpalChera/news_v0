@@ -188,33 +188,44 @@ export default function DashboardPage() {
               No articles yet. Click Refresh to fetch the latest tech news.
             </p>
           ) : (
-            <ul className="space-y-3">
+            <div className="space-y-3">
               {recentArticles?.slice(0, 10).map((article) => (
-                <li key={article.id} className="border-b border-border pb-3">
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline font-medium"
-                  >
-                    {article.title}
-                  </a>
-                  <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                    <span>{article.publisherName}</span>
-                    {article.topic && (
-                      <>
-                        <span>•</span>
-                        <span>{article.topic.name}</span>
-                      </>
-                    )}
-                    <span>•</span>
-                    <span>
-                      {new Date(article.publishedAt).toLocaleDateString()}
-                    </span>
+                <a
+                  key={article.id}
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex gap-3 border-b border-border pb-3 hover:bg-secondary/30 -mx-2 px-2 py-1 rounded transition-colors"
+                >
+                  {article.imageUrl && (
+                    <div className="w-20 h-14 flex-shrink-0 rounded overflow-hidden bg-secondary">
+                      <img
+                        src={article.imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.parentElement!.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm line-clamp-2 hover:underline">
+                      {article.title}
+                    </h3>
+                    <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
+                      <span>{article.publisherName}</span>
+                      {article.topic && (
+                        <>
+                          <span>•</span>
+                          <span>{article.topic.name}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </li>
+                </a>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </div>
