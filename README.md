@@ -74,6 +74,8 @@ Each digest gets a unique DALL-E 3 image:
 | Styling | Tailwind CSS |
 | AI | OpenAI (GPT-4o-mini, DALL-E 3) |
 
+The development of this application was assisted by Claude Code.
+
 ---
 
 ## Project Structure
@@ -168,16 +170,6 @@ npm run dev
 
 ---
 
-## Future Ideas
-
-- Email digests (daily/weekly)
-- User bookmarks
-- Reading history
-- Personalized topic weights
-- Additional news sources (NewsData, NewsAPI)
-- Trending sub-topics within categories
-
----
 
 ## Future Enhancements
 
@@ -193,7 +185,7 @@ npm run dev
 
 6. Research deeper - if you find an interesting article, you can click "tell me more" for an agent to get more info on the topic.
 
-...etc.
+---
 
 
 
