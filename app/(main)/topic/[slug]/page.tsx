@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { api } from "@/utils/trpc/react";
 import Link from "next/link";
 
@@ -10,16 +10,45 @@ export default function TopicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const utils = api.useUtils();
 
   const { data: topic, isLoading } = api.topic.getWithArticles.useQuery({
     slug,
     limit: 50,
   });
 
-  const { data: digest } = api.digest.latest.useQuery(
+  const {
+    data: digest,
+    isLoading: isLoadingDigest,
+  } = api.digest.latest.useQuery(
     { topicId: topic?.id },
     { enabled: !!topic?.id }
   );
+
+  const digestMutation = api.digest.generate.useMutation();
+
+  // Auto-generate digest if none exists and topic has articles
+  useEffect(() => {
+    if (isLoadingDigest || isGenerating) return;
+    if (!topic?.id || !topic.articles?.length) return;
+    if (digest) return;
+
+    const generateDigest = async () => {
+      setIsGenerating(true);
+      try {
+        await digestMutation.mutateAsync({ topicId: topic.id });
+        await utils.digest.latest.invalidate();
+      } catch (error) {
+        console.error("Failed to generate topic digest:", error);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    generateDigest();
+  }, [topic?.id, topic?.articles?.length, digest, isLoadingDigest, isGenerating]);
 
   if (isLoading) {
     return (
@@ -65,7 +94,13 @@ export default function TopicPage({
         </div>
 
         {/* Topic Digest */}
-        {digest && (
+        {isGenerating ? (
+          <div className="border border-border rounded-lg p-6 mb-8 bg-secondary/30">
+            <p className="text-muted-foreground text-sm">
+              Generating {topic.name} digest...
+            </p>
+          </div>
+        ) : digest ? (
           <div className="border border-border rounded-lg p-6 mb-8 bg-secondary/30">
             <div className="flex justify-between items-start mb-2">
               <h2 className="text-lg font-semibold">
@@ -81,7 +116,13 @@ export default function TopicPage({
             </div>
             <p className="text-sm whitespace-pre-wrap">{digest.content}</p>
           </div>
-        )}
+        ) : topic.articles && topic.articles.length > 0 ? (
+          <div className="border border-border border-dashed rounded-lg p-6 mb-8">
+            <p className="text-muted-foreground text-sm text-center">
+              No digest yet for this topic.
+            </p>
+          </div>
+        ) : null}
 
         {/* Articles */}
         <div className="border border-border rounded-lg p-6">
