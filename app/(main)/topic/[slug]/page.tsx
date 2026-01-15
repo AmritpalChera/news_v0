@@ -101,20 +101,35 @@ export default function TopicPage({
             </p>
           </div>
         ) : digest ? (
-          <div className="border border-border rounded-lg p-6 mb-8 bg-secondary/30">
-            <div className="flex justify-between items-start mb-2">
-              <h2 className="text-lg font-semibold">
-                {digest.title || `${topic.name} Digest`}
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {new Date(digest.date).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
+          <div className="border border-border rounded-lg overflow-hidden mb-8">
+            {/* Digest Image */}
+            {digest.imageUrl && (
+              <div className="w-full h-40 md:h-56 bg-secondary">
+                <img
+                  src={digest.imageUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.parentElement!.style.display = "none";
+                  }}
+                />
+              </div>
+            )}
+            <div className="p-6 bg-secondary/30">
+              <div className="flex justify-between items-start mb-2">
+                <h2 className="text-lg font-semibold">
+                  {digest.title || `${topic.name} Digest`}
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(digest.date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{digest.content}</p>
             </div>
-            <p className="text-sm whitespace-pre-wrap">{digest.content}</p>
           </div>
         ) : topic.articles && topic.articles.length > 0 ? (
           <div className="border border-border border-dashed rounded-lg p-6 mb-8">

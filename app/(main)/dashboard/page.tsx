@@ -123,20 +123,35 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">Loading digest...</p>
           </div>
         ) : latestDigest ? (
-          <div className="border border-border rounded-lg p-6 mb-8">
-            <div className="flex justify-between items-start mb-2">
-              <h2 className="text-lg font-semibold">
-                {latestDigest.title || "Daily Digest"}
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {new Date(latestDigest.date).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
+          <div className="border border-border rounded-lg overflow-hidden mb-8">
+            {/* Digest Image */}
+            {latestDigest.imageUrl && (
+              <div className="w-full h-48 md:h-64 bg-secondary">
+                <img
+                  src={latestDigest.imageUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.parentElement!.style.display = "none";
+                  }}
+                />
+              </div>
+            )}
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-2">
+                <h2 className="text-lg font-semibold">
+                  {latestDigest.title || "Daily Digest"}
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(latestDigest.date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{latestDigest.content}</p>
             </div>
-            <p className="text-sm whitespace-pre-wrap">{latestDigest.content}</p>
           </div>
         ) : (
           <div className="border border-border rounded-lg p-6 mb-8 border-dashed">

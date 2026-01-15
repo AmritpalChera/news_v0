@@ -32,8 +32,9 @@ export async function generateDailyDigest(options: {
   date?: Date;
   topicId?: string | null;
   forceRegenerate?: boolean;
+  maxArticles?: number; // Max articles to include in digest (default: all from last 24h, up to 70)
 }): Promise<GenerateDigestResult | null> {
-  const { date = new Date(), topicId = null, forceRegenerate = false } = options;
+  const { date = new Date(), topicId = null, forceRegenerate = false, maxArticles = 70 } = options;
 
   // Normalize date to start of day
   const digestDate = new Date(date);
@@ -68,7 +69,7 @@ export async function generateDailyDigest(options: {
   const recentArticles = await db.query.articles.findMany({
     where: whereConditions,
     orderBy: [desc(articles.publishedAt)],
-    limit: 20, // Limit to top 20 articles
+    limit: maxArticles,
   });
 
   if (recentArticles.length === 0) {
@@ -112,6 +113,7 @@ export async function generateDailyDigest(options: {
       date: digestDate,
       title: digestResult.title,
       content: digestResult.content,
+      imageUrl: digestResult.imageUrl,
       model: digestResult.model,
     })
     .returning();
@@ -177,6 +179,7 @@ export async function generateAllDailyDigests(options: {
 
 /**
  * Get the latest digest (global or topic-specific)
+ * Orders by createdAt to get the most recent if multiple exist for same day
  */
 export async function getLatestDigest(topicId?: string | null) {
   const whereConditions = topicId
@@ -185,7 +188,7 @@ export async function getLatestDigest(topicId?: string | null) {
 
   const digest = await db.query.digests.findFirst({
     where: whereConditions,
-    orderBy: [desc(digests.date)],
+    orderBy: [desc(digests.createdAt)],
     with: {
       topic: true,
     },

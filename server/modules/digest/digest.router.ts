@@ -20,6 +20,7 @@ export const digestRouter = createTRPCRouter({
           topicId: z.string().uuid().nullable().optional(),
           date: z.string().datetime().optional(),
           forceRegenerate: z.boolean().default(false),
+          maxArticles: z.number().min(1).max(100).default(70),
         })
         .optional()
     )
@@ -28,6 +29,7 @@ export const digestRouter = createTRPCRouter({
         topicId: input?.topicId ?? null,
         date: input?.date ? new Date(input.date) : new Date(),
         forceRegenerate: input?.forceRegenerate ?? false,
+        maxArticles: input?.maxArticles ?? 70,
       });
 
       return result;

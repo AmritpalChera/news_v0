@@ -139,6 +139,7 @@ export const digests = pgTable(
     date: timestamp("date", { mode: "date" }).notNull(),
     title: varchar("title", { length: 500 }),
     content: text("content").notNull(),
+    imageUrl: text("image_url"), // AI-generated image for the digest
     model: varchar("model", { length: 100 }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },

@@ -1,7 +1,13 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
+import OpenAI from "openai";
 import { TOPICS, type TopicSlug } from "./tagger";
+
+// OpenAI client for image generation
+const openaiClient = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // ============================================
 // Models
@@ -80,6 +86,7 @@ export interface ArticleForDigest {
 export interface DigestResult {
   title: string;
   content: string;
+  imageUrl?: string;
   model: string;
 }
 
@@ -139,13 +146,66 @@ Write the digest:`;
       prompt: `Write a catchy 5-7 word title for this digest:\n\n${result.text}\n\nTitle:`,
     });
 
+    // Generate an image for the digest
+    let imageUrl: string | undefined;
+    try {
+      imageUrl = await generateDigestImage(result.text, topicName);
+    } catch (error) {
+      console.error("Digest image generation failed:", error);
+      // Continue without image - it's optional
+    }
+
     return {
       title: titleResult.text.trim().replace(/^["']|["']$/g, ""),
       content: result.text,
+      imageUrl,
       model: DEFAULT_MODEL,
     };
   } catch (error) {
     console.error("Digest generation failed:", error);
     throw new Error("Failed to generate digest");
   }
+}
+
+// ============================================
+// AI Image Generation
+// ============================================
+
+/**
+ * Generate an abstract, cartoonish image for a digest
+ */
+export async function generateDigestImage(
+  digestContent: string,
+  topicName?: string
+): Promise<string> {
+  // Create a prompt for the image based on the digest content
+  const promptResult = await generateText({
+    model: openai(DEFAULT_MODEL),
+    prompt: `Based on this tech news digest, write a short image prompt (max 50 words) for a cartoonish illustration.
+The image should visually represent the main themes without any text, words, letters, or numbers.
+
+Digest:
+${digestContent}
+
+${topicName ? `Topic: ${topicName}` : ""}
+
+Image prompt:`,
+  });
+
+  const imagePrompt = `illustration, no text or words: ${promptResult.text.trim()}. No text, labels, or letters anywhere in the image.`;
+
+  const response = await openaiClient.images.generate({
+    model: "dall-e-3",
+    prompt: imagePrompt,
+    n: 1,
+    size: "1792x1024",
+    quality: "standard",
+  });
+
+  const url = response.data?.[0]?.url;
+  if (!url) {
+    throw new Error("No image URL returned from DALL-E");
+  }
+
+  return url;
 }
