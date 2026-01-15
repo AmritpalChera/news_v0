@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { articles, topics, digests } from "@/db/schema";
-import { eq, gte, and, desc } from "drizzle-orm";
+import { eq, gte, and, desc, isNull } from "drizzle-orm";
 import { generateDigest, type ArticleForDigest } from "./ai";
 
 // ============================================
@@ -43,7 +43,7 @@ export async function generateDailyDigest(options: {
   const existingDigest = await db.query.digests.findFirst({
     where: and(
       eq(digests.type, "daily"),
-      topicId ? eq(digests.topicId, topicId) : eq(digests.topicId, topicId as any),
+      topicId ? eq(digests.topicId, topicId) : isNull(digests.topicId),
       eq(digests.date, digestDate)
     ),
   });
@@ -181,7 +181,7 @@ export async function generateAllDailyDigests(options: {
 export async function getLatestDigest(topicId?: string | null) {
   const whereConditions = topicId
     ? and(eq(digests.type, "daily"), eq(digests.topicId, topicId))
-    : and(eq(digests.type, "daily"), eq(digests.topicId, null as any));
+    : and(eq(digests.type, "daily"), isNull(digests.topicId));
 
   const digest = await db.query.digests.findFirst({
     where: whereConditions,
@@ -209,7 +209,7 @@ export async function getDigests(options: {
   if (topicId !== undefined) {
     whereConditions = and(
       whereConditions,
-      topicId ? eq(digests.topicId, topicId) : eq(digests.topicId, null as any)
+      topicId ? eq(digests.topicId, topicId) : isNull(digests.topicId)
     ) as any;
   }
 

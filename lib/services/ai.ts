@@ -110,41 +110,39 @@ export async function generateDigest(
     )
     .join("\n\n");
 
-  const prompt = `You are a tech news editor writing a daily digest. Create a concise, engaging summary of today's ${scope}.
+  const prompt = `You are a tech news editor. Write a brief daily digest of today's ${scope}.
 
 Date: ${dateStr}
-${topicName ? `Topic: ${topicName}` : "Scope: All tech news"}
+${topicName ? `Topic: ${topicName}` : ""}
 
-Articles to summarize:
+Articles:
 ${articleList}
 
 Instructions:
-- Write a cohesive narrative summary (3-5 paragraphs)
-- Highlight the most significant stories first
-- Group related stories together
-- Use clear, professional language
-- Don't just list headlines - synthesize the key themes and developments
-- If multiple outlets covered the same story, mention it's widely reported
-- Keep it under 500 words
+- Write 2-3 short paragraphs MAX (under 150 words total)
+- Lead with the biggest story
+- Be direct and punchy - no fluff
+- Synthesize themes, don't list headlines
+- Skip minor stories if needed
 
-Write the digest now:`;
+Write the digest:`;
 
   try {
     const result = await generateText({
-      model: openai("gpt-4o"),
+      model: openai(DEFAULT_MODEL),
       prompt,
     });
 
     // Generate a title for the digest
     const titleResult = await generateText({
       model: openai(DEFAULT_MODEL),
-      prompt: `Based on this tech news digest, write a short, catchy title (max 10 words) that captures the main theme:\n\n${result.text}\n\nTitle:`,
+      prompt: `Write a catchy 5-7 word title for this digest:\n\n${result.text}\n\nTitle:`,
     });
 
     return {
       title: titleResult.text.trim().replace(/^["']|["']$/g, ""),
       content: result.text,
-      model: "gpt-4o",
+      model: DEFAULT_MODEL,
     };
   } catch (error) {
     console.error("Digest generation failed:", error);
