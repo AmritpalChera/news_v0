@@ -4,19 +4,20 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { api } from "@/utils/trpc/react";
 import Link from "next/link";
 
+// Article type with topic relation (inferred from API)
+type ArticleWithTopic = {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  imageUrl: string | null;
+  publisherName: string | null;
+  publishedAt: Date;
+  topic: { name: string; slug: string } | null;
+};
+
 // Group articles by date
-function groupArticlesByDate(
-  articles: Array<{
-    id: string;
-    title: string;
-    description: string | null;
-    url: string;
-    imageUrl: string | null;
-    publisherName: string | null;
-    publishedAt: Date;
-    topic: { name: string; slug: string } | null;
-  }>
-) {
+function groupArticlesByDate(articles: ArticleWithTopic[]) {
   const groups: Record<string, typeof articles> = {};
 
   for (const article of articles) {
@@ -72,7 +73,7 @@ function useInfiniteScroll(callback: () => void, hasMore: boolean) {
 }
 
 export default function BrowsePage() {
-  const [allArticles, setAllArticles] = useState<any[]>([]);
+  const [allArticles, setAllArticles] = useState<ArticleWithTopic[]>([]);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
 
@@ -237,7 +238,7 @@ export default function BrowsePage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full">
               <div className="w-2 h-2 bg-primary rounded-full" />
               <span className="text-sm text-muted-foreground">
-                You've reached the end
+                You&#39;ve reached the end
               </span>
             </div>
           </div>

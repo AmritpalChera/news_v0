@@ -1,11 +1,8 @@
 import { db } from "@/db";
 import { articles, topics, digests } from "@/db/schema";
-import { eq, gte, and, desc, isNull } from "drizzle-orm";
+import { eq, gte, and, desc, isNull, SQL } from "drizzle-orm";
 import { generateDigest, type ArticleForDigest } from "./ai";
 
-// ============================================
-// Types
-// ============================================
 
 export interface GenerateDigestResult {
   digestId: string;
@@ -213,7 +210,7 @@ export async function getDigests(options: {
     whereConditions = and(
       whereConditions,
       topicId ? eq(digests.topicId, topicId) : isNull(digests.topicId)
-    ) as any;
+    ) as SQL<unknown>;
   }
 
   const results = await db.query.digests.findMany({
