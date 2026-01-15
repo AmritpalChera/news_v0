@@ -1,0 +1,138 @@
+"use client";
+
+import { use } from "react";
+import { api } from "@/utils/trpc/react";
+import Link from "next/link";
+
+export default function TopicPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
+
+  const { data: topic, isLoading } = api.topic.getWithArticles.useQuery({
+    slug,
+    limit: 50,
+  });
+
+  const { data: digest } = api.digest.latest.useQuery(
+    { topicId: topic?.id },
+    { enabled: !!topic?.id }
+  );
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen p-8">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!topic) {
+    return (
+      <main className="min-h-screen p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4">Topic not found</h1>
+          <Link href="/dashboard" className="text-primary hover:underline">
+            Back to dashboard
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <Link
+            href="/dashboard"
+            className="text-sm text-muted-foreground hover:text-foreground mb-2 inline-block"
+          >
+            &larr; Back to dashboard
+          </Link>
+          <h1 className="text-3xl font-bold">{topic.name}</h1>
+          {topic.description && (
+            <p className="text-muted-foreground mt-1">{topic.description}</p>
+          )}
+          <p className="text-sm text-muted-foreground mt-2">
+            {topic.articles?.length || 0} articles
+          </p>
+        </div>
+
+        {/* Topic Digest */}
+        {digest && (
+          <div className="border border-border rounded-lg p-6 mb-8 bg-secondary/30">
+            <div className="flex justify-between items-start mb-2">
+              <h2 className="text-lg font-semibold">
+                {digest.title || `${topic.name} Digest`}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {new Date(digest.date).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
+            <p className="text-sm whitespace-pre-wrap">{digest.content}</p>
+          </div>
+        )}
+
+        {/* Articles */}
+        <div className="border border-border rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-4">Recent Articles</h2>
+          {topic.articles && topic.articles.length > 0 ? (
+            <ul className="space-y-4">
+              {topic.articles.map((article) => (
+                <li
+                  key={article.id}
+                  className="border-b border-border pb-4 last:border-0 last:pb-0"
+                >
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline font-medium text-base"
+                  >
+                    {article.title}
+                  </a>
+                  {article.description && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {article.description}
+                    </p>
+                  )}
+                  <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
+                    {article.publisherName && (
+                      <span>{article.publisherName}</span>
+                    )}
+                    <span>•</span>
+                    <span>
+                      {new Date(article.publishedAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">
+              No articles yet for this topic.
+            </p>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -61,7 +61,7 @@ export interface FetchOptions {
 export async function fetchAndStoreArticles(
   options: FetchOptions = {}
 ): Promise<FetchResult> {
-  const { maxArticles = 10, useAI = true } = options;
+  const { maxArticles = 50, useAI = true } = options;
 
   const result: FetchResult = {
     fetched: 0,

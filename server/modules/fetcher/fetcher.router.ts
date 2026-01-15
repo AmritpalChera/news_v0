@@ -23,7 +23,7 @@ export const fetcherRouter = createTRPCRouter({
     )
     .mutation(async ({ input }) => {
       const result = await fetchAndStoreArticles({
-        maxArticles: input?.max ?? 10,
+        maxArticles: input?.max ?? 50,
         useAI: input?.useAI ?? true,
       });
       return result;

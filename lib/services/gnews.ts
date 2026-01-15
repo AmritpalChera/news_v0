@@ -60,7 +60,7 @@ export async function fetchGNewsTopHeadlines(
     query = "technology OR tech OR software OR AI OR startup",
     lang = "en",
     country = "us",
-    max = 10,
+    max = 50,
     from = new Date(Date.now() - DEFAULT_HOURS_AGO * 60 * 60 * 1000), // Default: 24 hours ago
     to,
   } = options;
@@ -86,12 +86,15 @@ export async function fetchGNewsTopHeadlines(
     },
   });
 
+
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`GNews API error (${response.status}): ${error}`);
   }
 
   const data: GNewsResponse = await response.json();
+  console.log(data);
   return data;
 }
 

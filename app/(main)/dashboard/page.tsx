@@ -46,10 +46,15 @@ export default function DashboardPage() {
 
     try {
       // Step 1: Fetch new articles
-      const fetchResult = await fetchMutation.mutateAsync({ max: 50 });
-      setRefreshStatus(
-        `Fetched ${fetchResult.inserted} new articles. Generating digest...`
-      );
+      const fetchResult = await fetchMutation.mutateAsync({
+        max: 50,
+        useAI: true,
+      });
+      const statusMsg =
+        fetchResult.inserted > 0
+          ? `${fetchResult.inserted} new articles (${fetchResult.duplicates} duplicates skipped). Generating digest...`
+          : `No new articles (${fetchResult.fetched} fetched, all duplicates). Regenerating digest...`;
+      setRefreshStatus(statusMsg);
 
       // Step 2: Generate digest (force regenerate to get fresh content)
       await digestMutation.mutateAsync({ forceRegenerate: true });
